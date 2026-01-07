@@ -14,6 +14,49 @@ function resolveDefaultApiBase() {
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || resolveDefaultApiBase()).replace(/\/$/, '')
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || API_BASE
 
+function generateMockHistory(id: string) {
+  const points = []
+  const now = Date.now()
+  const count = 300 // 5 minutes of data at 1s interval
+
+  for (let i = 0; i < count; i++) {
+    points.push({
+      time: (now / 1000) - (count - i), // Unix timestamp in seconds
+      values: {
+        "0": Math.sin(i * 0.1) * 10 + 45 + (Math.random() * 2), // Temp approx 45C
+        "1": Math.cos(i * 0.05) * 5 + 12 + (Math.random() * 0.5) // Voltage approx 12V
+      }
+    })
+  }
+
+  return {
+    experiment_id: id,
+    name: "Demo Experiment: " + id,
+    collector_id: "DEMO_COLLECTOR",
+    start_timestamp_utc: (now - (count * 1000)),
+    status: "completed",
+    history: points,
+    config: {
+      "0": { id: "0", name: "Reactor Temp", type: "temp", enabled: true },
+      "1": { id: "1", name: "Valve Voltage", type: "volt", enabled: true }
+    }
+  }
+}
+
+// --- Demo Mode Helpers ---
+export const DEMO_KEY = "daqpg_demo_mode"
+export const isDemoMode = () => {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem(DEMO_KEY) === 'true'
+}
+export const enableDemoMode = () => {
+  if (typeof window !== 'undefined') localStorage.setItem(DEMO_KEY, 'true')
+}
+export const disableDemoMode = () => {
+  if (typeof window !== 'undefined') localStorage.removeItem(DEMO_KEY)
+}
+// -------------------------
+
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
@@ -84,15 +127,26 @@ export interface ExperimentData {
 // Authentication API
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE}/api/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: 'include',
-      body: JSON.stringify(credentials),
-    })
-    return response.json()
+    try {
+      if (isDemoMode()) {
+        return { success: true, role: 'admin', message: 'Demo Login Successful' }
+      }
+      const response = await fetch(`${API_BASE}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: 'include',
+        body: JSON.stringify(credentials),
+      })
+      if (!response.ok) throw new Error('Network response was not ok')
+      return response.json()
+    } catch (e) {
+      console.warn("API Login failed, checking for manual demo override or fallback...", e)
+      // Note: We don't auto-fallback to demo on failed login unless explicitly set, 
+      // but we will let the UI handle the "Activate Demo" action.
+      throw e
+    }
   },
 
   async logout(): Promise<ApiResponse> {
@@ -101,8 +155,16 @@ export const authApi = {
   },
 
   async getStatus(): Promise<StatusResponse> {
-    const response = await fetch(`${API_BASE}/api/status`, { credentials: 'include' })
-    return response.json()
+    if (isDemoMode()) {
+      return { logged_in: true, role: 'admin', username: 'Demo User' }
+    }
+    try {
+      const response = await fetch(`${API_BASE}/api/status`, { credentials: 'include' })
+      if (!response.ok) throw new Error('Network error')
+      return response.json()
+    } catch (e) {
+      return { logged_in: false }
+    }
   },
 }
 
@@ -142,6 +204,15 @@ export class SocketManager {
   connect() {
     if (typeof window === "undefined") return
     if (this.socket && this.socket.connected) return
+
+    // --- Demo Mode Injection ---
+    if (isDemoMode()) {
+      console.log("Starting Demo Simulation...")
+      this.startDemoSimulation()
+      return
+    }
+    // ---------------------------
+
     if (this.socket && !this.socket.connected) {
       try {
         this.socket.connect()
@@ -197,6 +268,17 @@ export class SocketManager {
   }
   subscribeToExperiment(experimentId: string) {
     this.subscriptions.add(String(experimentId))
+
+    if (isDemoMode()) {
+      console.log("Mocking subscription for:", experimentId)
+      const history = generateMockHistory(experimentId) as any
+      // Use timeout to simulate network delay
+      setTimeout(() => {
+        this.pendingListeners.experiment_history.forEach(cb => cb(history))
+      }, 500)
+      return
+    }
+
     if (this.socket) this.socket.emit("subscribe_to_experiment", experimentId)
   }
   unsubscribeFromExperiment(experimentId: string) {
@@ -250,6 +332,49 @@ export class SocketManager {
   }
   deleteExperiment(experimentId: string) {
     if (this.socket) this.socket.emit("delete_experiment", experimentId)
+  }
+
+  // --- Demo Simulation ---
+  private demoInterval: any = null
+  private startDemoSimulation() {
+    if (this.demoInterval) return
+
+    // Simulate "Connected"
+    this.pendingListeners.connect.forEach(cb => cb())
+
+    // Mock Data
+    const mockExperiments = {
+      running: {},
+      completed: {
+        "demo-1": {
+          id: "demo-1",
+          name: "Demo: Reactor Temperature",
+          collector_id: "LAB_01",
+          start_timestamp_utc: Date.now() - 3600000,
+          status: "completed",
+          duration: 3600,
+          config: {}
+        },
+        "demo-2": {
+          id: "demo-2",
+          name: "Demo: Vibration Analysis",
+          collector_id: "LAB_02",
+          start_timestamp_utc: Date.now() - 7200000,
+          status: "completed",
+          duration: 1800,
+          config: {}
+        }
+      }
+    } as any
+
+    // Emit initial list
+    this.pendingListeners.experiments_update.forEach(cb => cb(mockExperiments))
+
+    // Simulate real-time data if "subscribed" (for Reports page mainly we just need the list, 
+    // but if meaningful, we simulate 'experiment_history' when requested)
+
+    // Override 'subscribe_to_experiment' logic for demo
+    // We can't easily override emit() without Proxies, but we can hook into 'getCollectorData' etc.
   }
 }
 

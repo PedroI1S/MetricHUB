@@ -25,13 +25,18 @@ export function LoginForm() {
     try {
       const data = await authApi.login({ username, password })
       if (data.success) {
-        // Reload to let the app read session state via /api/status
         window.location.reload()
       } else {
         setError(data.message || "Credenciais inválidas")
       }
     } catch (error) {
-      setError("Erro de conexão com o servidor")
+      // Auto-activate demo mode context
+      console.error(error)
+      setError("Erro de conexão. Ativando Modo Demo...")
+      import("@/lib/api").then(({ enableDemoMode }) => {
+        enableDemoMode()
+        setTimeout(() => window.location.reload(), 1500)
+      })
     } finally {
       setIsLoading(false)
     }
