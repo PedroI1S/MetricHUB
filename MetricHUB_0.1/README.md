@@ -1,4 +1,4 @@
-# DAQPG 0.8 – Data Acquisition & Monitoring Platform
+# MetricHUB – Data Acquisition & Monitoring Platform
 
 Version 0.8 introduces smooth UI animations and enhanced user experience improvements.
 
