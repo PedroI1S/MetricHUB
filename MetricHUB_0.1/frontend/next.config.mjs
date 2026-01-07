@@ -1,5 +1,8 @@
 const nextConfig = {
   output: 'export',
+  // Required for GitHub Pages to load assets correctly
+  basePath: process.env.NODE_ENV === 'production' ? '/MetricHUB' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/MetricHUB/' : '',
   eslint: {
     ignoreDuringBuilds: true,
   },
