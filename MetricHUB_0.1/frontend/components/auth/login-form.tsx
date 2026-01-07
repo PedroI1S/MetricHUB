@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Activity, Lock, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function LoginForm() {
+  const router = useRouter()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -25,7 +27,8 @@ export function LoginForm() {
     try {
       const data = await authApi.login({ username, password })
       if (data.success) {
-        window.location.reload()
+        // If successful, navigate to dashboard
+        router.push("/dashboard")
       } else {
         setError(data.message || "Credenciais inválidas")
       }
@@ -35,7 +38,7 @@ export function LoginForm() {
       setError("Erro de conexão. Ativando Modo Demo...")
       import("@/lib/api").then(({ enableDemoMode }) => {
         enableDemoMode()
-        setTimeout(() => window.location.reload(), 1500)
+        setTimeout(() => router.push("/dashboard"), 1500)
       })
     } finally {
       setIsLoading(false)

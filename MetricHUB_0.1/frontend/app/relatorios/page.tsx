@@ -27,7 +27,7 @@ function RelatoriosContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const urlExperimentId = searchParams.get("id")
-  
+
   const [user, setUser] = useState<{ username: string; role: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [completedExperiments, setCompletedExperiments] = useState<Record<string, Experiment>>({})
@@ -39,7 +39,7 @@ function RelatoriosContent() {
   useEffect(() => {
     authApi.getStatus().then((s) => {
       if (!s.logged_in) {
-        window.location.href = "/"
+        router.push("/")
       } else if (s.username && s.role) {
         setUser({ username: s.username, role: s.role })
         socketManager.connect()
@@ -72,21 +72,21 @@ function RelatoriosContent() {
       // Aguarda um pouco para garantir que o DOM foi renderizado
       setTimeout(() => {
         const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement
-        
+
         if (viewport && selectedCardRef.current) {
           // Calcula a posição do card em relação ao viewport
           const viewportRect = viewport.getBoundingClientRect()
           const cardRect = selectedCardRef.current.getBoundingClientRect()
           const cardHeight = selectedCardRef.current.offsetHeight
           const viewportHeight = viewport.clientHeight
-          
+
           // Calcula a posição atual do card em relação ao scroll atual
           const currentScrollTop = viewport.scrollTop
           const cardTopRelativeToViewport = cardRect.top - viewportRect.top
-          
+
           // Calcula a nova posição de scroll para centralizar o card
           const scrollPosition = currentScrollTop + cardTopRelativeToViewport - (viewportHeight / 2) + (cardHeight / 2)
-          
+
           viewport.scrollTo({
             top: scrollPosition,
             behavior: 'smooth'
@@ -99,20 +99,21 @@ function RelatoriosContent() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
-    } catch {}
+    } catch { }
     socketManager.disconnect()
-    window.location.href = "/"
+    socketManager.disconnect()
+    router.push("/")
   }
 
   const handleViewChange = (view: string) => {
     if (view === "dashboard") {
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     } else if (view === "config") {
-      window.location.href = "/configuracao"
+      router.push("/configuracao")
     } else if (view === "monitoring") {
-      window.location.href = "/monitoramento"
+      router.push("/monitoramento")
     } else if (view === "reports") {
-      window.location.href = "/relatorios"
+      router.push("/relatorios")
     }
   }
 
@@ -141,7 +142,7 @@ function RelatoriosContent() {
   }
 
   if (!user) {
-    window.location.href = "/"
+    // Avoid double redirect if handled by useEffect
     return null
   }
 
@@ -177,7 +178,7 @@ function RelatoriosContent() {
           currentView="reports"
           onViewChange={handleViewChange}
         />
-        
+
         <motion.div
           key="grid-view"
           initial={{ opacity: 0, y: 20 }}
@@ -197,7 +198,7 @@ function RelatoriosContent() {
             <p className="text-muted-foreground mb-4">
               Selecione um experimento para visualizar o relatório completo
             </p>
-            
+
             {/* Campo de busca */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -229,41 +230,41 @@ function RelatoriosContent() {
                 </div>
               ) : (
                 filteredExperiments.map((experiment) => (
-                <Card
-                  key={experiment.id}
-                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50"
-                  onClick={() => handleSelectExperiment(experiment.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0 mr-2">
-                        <h3 className="font-semibold text-foreground truncate text-lg">
-                          {experiment.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground font-mono truncate">
-                          {experiment.collector_id}
-                        </p>
+                  <Card
+                    key={experiment.id}
+                    className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50"
+                    onClick={() => handleSelectExperiment(experiment.id)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0 mr-2">
+                          <h3 className="font-semibold text-foreground truncate text-lg">
+                            {experiment.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground font-mono truncate">
+                            {experiment.collector_id}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    </div>
 
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>
-                          {formatDistanceToNow(new Date(experiment.start_timestamp_utc), {
-                            addSuffix: true,
-                            locale: ptBR,
-                          })}
-                        </span>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            {formatDistanceToNow(new Date(experiment.start_timestamp_utc), {
+                              addSuffix: true,
+                              locale: ptBR,
+                            })}
+                          </span>
+                        </div>
+                        {experiment.duration && (
+                          <span className="font-medium">{formatDuration(experiment.duration)}</span>
+                        )}
                       </div>
-                      {experiment.duration && (
-                        <span className="font-medium">{formatDuration(experiment.duration)}</span>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardContent>
+                  </Card>
+                ))
               )}
             </div>
           )}
@@ -281,7 +282,7 @@ function RelatoriosContent() {
         currentView="reports"
         onViewChange={handleViewChange}
       />
-      
+
       <motion.div
         key="sidebar-view"
         initial={{ opacity: 0 }}
@@ -308,7 +309,7 @@ function RelatoriosContent() {
             <p className="text-sm text-muted-foreground mb-3">
               Selecione um experimento
             </p>
-            
+
             {/* Campo de busca na sidebar */}
             <div className="relative">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -331,56 +332,55 @@ function RelatoriosContent() {
                 </div>
               ) : (
                 filteredExperiments.map((experiment) => {
-                const isSelected = selectedExperimentId === experiment.id || selectedExperimentId === String(experiment.id)
-                return (
-                  <div 
-                    key={experiment.id}
-                    ref={isSelected ? selectedCardRef : null}
-                  >
-                    <Card
-                      className={`cursor-pointer transition-all hover:shadow-md ${
-                        isSelected
-                          ? 'border-primary bg-primary/5 shadow-sm'
-                          : 'hover:border-primary/50'
-                      }`}
-                      onClick={() => handleSelectExperiment(experiment.id)}
+                  const isSelected = selectedExperimentId === experiment.id || selectedExperimentId === String(experiment.id)
+                  return (
+                    <div
+                      key={experiment.id}
+                      ref={isSelected ? selectedCardRef : null}
                     >
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1 min-w-0 mr-2">
-                          <h3 className="font-semibold text-sm text-foreground truncate">
-                            {experiment.name}
-                          </h3>
-                          <p className="text-xs text-muted-foreground font-mono truncate">
-                            {experiment.collector_id}
-                          </p>
-                        </div>
-                        {isSelected ? (
-                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        )}
-                      </div>
+                      <Card
+                        className={`cursor-pointer transition-all hover:shadow-md ${isSelected
+                            ? 'border-primary bg-primary/5 shadow-sm'
+                            : 'hover:border-primary/50'
+                          }`}
+                        onClick={() => handleSelectExperiment(experiment.id)}
+                      >
+                        <CardContent className="p-3">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0 mr-2">
+                              <h3 className="font-semibold text-sm text-foreground truncate">
+                                {experiment.name}
+                              </h3>
+                              <p className="text-xs text-muted-foreground font-mono truncate">
+                                {experiment.collector_id}
+                              </p>
+                            </div>
+                            {isSelected ? (
+                              <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            )}
+                          </div>
 
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {formatDistanceToNow(new Date(experiment.start_timestamp_utc), {
-                              addSuffix: true,
-                              locale: ptBR,
-                            })}
-                          </span>
-                        </div>
-                        {experiment.duration && (
-                          <span className="font-medium">{formatDuration(experiment.duration)}</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </div>
-                )
-              })
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3" />
+                              <span>
+                                {formatDistanceToNow(new Date(experiment.start_timestamp_utc), {
+                                  addSuffix: true,
+                                  locale: ptBR,
+                                })}
+                              </span>
+                            </div>
+                            {experiment.duration && (
+                              <span className="font-medium">{formatDuration(experiment.duration)}</span>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                })
               )}
             </div>
           </ScrollArea>

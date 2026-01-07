@@ -14,7 +14,7 @@ export default function DashboardPage() {
   useEffect(() => {
     authApi.getStatus().then((s) => {
       if (!s.logged_in) {
-        window.location.href = "/"
+        router.push("/")
       } else if (s.username && s.role) {
         setUser({ username: s.username, role: s.role })
         socketManager.connect()
@@ -30,29 +30,28 @@ export default function DashboardPage() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
-    } catch {}
+    } catch { }
     socketManager.disconnect()
-    window.location.href = "/"
+    socketManager.disconnect()
+    router.push("/")
   }
 
   const handleViewChange = (view: string, experimentId?: string) => {
     if (view === "dashboard") {
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     } else if (view === "config") {
-      window.location.href = "/configuracao"
+      router.push("/configuracao")
     } else if (view === "monitoring") {
       if (experimentId) {
-        window.location.href = `/monitoramento?id=${experimentId}`
+        router.push(`/monitoramento?id=${experimentId}`)
       } else {
-        // Go to monitoring list page
-        window.location.href = "/monitoramento"
+        router.push("/monitoramento")
       }
     } else if (view === "reports") {
       if (experimentId) {
-        window.location.href = `/relatorios?id=${experimentId}`
+        router.push(`/relatorios?id=${experimentId}`)
       } else {
-        // Go to reports list page
-        window.location.href = "/relatorios"
+        router.push("/relatorios")
       }
     }
   }

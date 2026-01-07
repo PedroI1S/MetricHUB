@@ -14,7 +14,7 @@ export default function ConfiguracaoPage() {
   useEffect(() => {
     authApi.getStatus().then((s) => {
       if (!s.logged_in) {
-        window.location.href = "/"
+        router.push("/")
       } else if (s.username && s.role) {
         setUser({ username: s.username, role: s.role })
         socketManager.connect()
@@ -30,18 +30,19 @@ export default function ConfiguracaoPage() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
-    } catch {}
+    } catch { }
     socketManager.disconnect()
-    window.location.href = "/"
+    socketManager.disconnect()
+    router.push("/")
   }
 
   const handleViewChange = (view: string) => {
     if (view === "dashboard") {
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     } else if (view === "monitoring") {
-      window.location.href = "/monitoramento"
+      router.push("/monitoramento")
     } else if (view === "reports") {
-      window.location.href = "/relatorios"
+      router.push("/relatorios")
     }
   }
 
@@ -64,8 +65,8 @@ export default function ConfiguracaoPage() {
         onViewChange={handleViewChange}
       />
       <Configuration
-        onBack={() => window.location.href = "/dashboard"}
-        onStartExperiment={() => window.location.href = "/dashboard"}
+        onBack={() => router.push("/dashboard")}
+        onStartExperiment={() => router.push("/dashboard")}
       />
     </main>
   )
