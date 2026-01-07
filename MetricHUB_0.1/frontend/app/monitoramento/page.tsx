@@ -32,7 +32,7 @@ function MonitoramentoContent() {
   useEffect(() => {
     authApi.getStatus().then((s) => {
       if (!s.logged_in) {
-        window.location.href = "/"
+        router.push("/")
       } else if (s.username && s.role) {
         setUser({ username: s.username, role: s.role })
         socketManager.connect()
@@ -57,20 +57,21 @@ function MonitoramentoContent() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
-    } catch {}
+    } catch { }
     socketManager.disconnect()
-    window.location.href = "/"
+    socketManager.disconnect()
+    router.push("/")
   }
 
   const handleViewChange = (view: string) => {
     if (view === "dashboard") {
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     } else if (view === "config") {
-      window.location.href = "/configuracao"
+      router.push("/configuracao")
     } else if (view === "monitoring") {
-      window.location.href = "/monitoramento"
+      router.push("/monitoramento")
     } else if (view === "reports") {
-      window.location.href = "/relatorios"
+      router.push("/relatorios")
     }
   }
 
@@ -83,10 +84,8 @@ function MonitoramentoContent() {
   }
 
   if (!user) {
-    window.location.href = "/"
     return null
   }
-
   // If no experiment ID, show list of running experiments
   if (!experimentId) {
     return (
@@ -97,7 +96,7 @@ function MonitoramentoContent() {
           currentView="monitoring"
           onViewChange={handleViewChange}
         />
-        
+
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Monitoramento</h1>
@@ -124,7 +123,7 @@ function MonitoramentoContent() {
                   <Button
                     variant="outline"
                     size="lg"
-                    onClick={() => window.location.href = "/configuracao"}
+                    onClick={() => router.push("/configuracao")}
                     className="mt-4"
                   >
                     Nova Medição
@@ -168,7 +167,7 @@ function MonitoramentoContent() {
                         <Button
                           variant="default"
                           size="sm"
-                          onClick={() => window.location.href = `/monitoramento?id=${experiment.id}`}
+                          onClick={() => router.push(`/monitoramento?id=${experiment.id}`)}
                           className="w-full flex items-center justify-center space-x-2"
                         >
                           <Eye className="h-4 w-4" />
@@ -197,10 +196,10 @@ function MonitoramentoContent() {
       />
       <Monitoring
         experimentId={experimentId}
-        onBack={() => window.location.href = "/monitoramento"}
+        onBack={() => router.push("/monitoramento")}
         onStop={(id) => {
           socketManager.stopExperiment(id)
-          window.location.href = `/relatorios?id=${id}`
+          router.push(`/relatorios?id=${id}`)
         }}
       />
     </main>

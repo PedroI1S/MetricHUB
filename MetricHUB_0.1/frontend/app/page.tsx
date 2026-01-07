@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     authApi.getStatus().then((s) => {
       if (s.logged_in) {
-        window.location.href = "/dashboard"
+        router.push("/dashboard")
       }
     })
   }, [router])
