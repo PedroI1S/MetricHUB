@@ -1,0 +1,8 @@
+# requirements.txt
+Flask
+Flask-SocketIO
+Flask-CORS
+pandas
+xlsxwriter
+Flask-Login
+requests
