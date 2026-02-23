@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: metrichub_postgres
+    environment:
+      POSTGRES_USER: metrichub_user
+      POSTGRES_PASSWORD: metrichub_password
+      POSTGRES_DB: metrichub_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  postgres_data:

@@ -6,3 +6,4 @@ pandas
 xlsxwriter
 Flask-Login
 requests
+psycopg2-binary

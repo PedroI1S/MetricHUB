@@ -1,6 +1,0 @@
-# requirements.txt
-Flask
-Flask-SocketIO
-pandas
-xlsxwriter
-Flask-Login
