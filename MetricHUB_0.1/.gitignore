@@ -54,3 +54,6 @@ server.log
 # OS
 Thumbs.db
 .DS_Store
+
+*storybook.log
+storybook-static

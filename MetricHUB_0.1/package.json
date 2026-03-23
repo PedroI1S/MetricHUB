@@ -8,7 +8,9 @@
     "dev:full": "pnpm build && ./.venv/bin/python backend/run.py",
     "build": "pnpm --prefix frontend build",
     "export": "pnpm --prefix frontend export",
-    "lint": "pnpm --prefix frontend lint"
+    "lint": "pnpm --prefix frontend lint",
+    "storybook": "pnpm --prefix frontend storybook",
+    "build-storybook": "pnpm --prefix frontend build-storybook"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -1,0 +1,65 @@
+import { Meta, Title, Subtitle, Heading, Canvas, Controls } from '@storybook/addon-docs/blocks'
+import * as ChannelValuesTableStories from '../monitoring/channel-values-table.stories'
+import * as DataTableStories from '../reports/data-table.stories'
+import * as StatsSummaryStories from '../reports/stats-summary.stories'
+import * as DashboardPageStories from '../dashboard/dashboard.stories'
+import * as MonitoringPageStories from '../monitoring/monitoring.stories'
+import * as ReportsPageStories from '../reports/reports.stories'
+import * as AppShellStories from '../layout/app-shell.stories'
+
+<Meta title="Docs/Monitoring e Reports" />
+
+<Title />
+<Subtitle>Painel de componentes para visualizacao de telemetria e analise de relatorios</Subtitle>
+
+Esta pagina documenta os componentes principais de visualizacao de dados do projeto, com cenarios
+representativos para monitoramento em tempo real e exploracao de dados historicos.
+
+<Heading>Monitoring</Heading>
+
+Componentes usados durante aquisicao ao vivo, com foco em acompanhamento de canais e leitura continua.
+
+<Heading>ChannelValuesTable</Heading>
+
+Tabela de valores em tempo real com auto-scroll bloqueavel e limite de linhas para manter desempenho.
+
+<Canvas of={ChannelValuesTableStories.Running} />
+<Controls of={ChannelValuesTableStories.Running} />
+
+<Heading>Reports</Heading>
+
+Componentes para inspecao posterior da coleta, com busca, paginacao e resumo estatistico por canal.
+
+<Heading>DataTable</Heading>
+
+Tabela paginada para navegacao de registros historicos e busca por tempo/valor.
+
+<Canvas of={DataTableStories.Paginated} />
+<Controls of={DataTableStories.Paginated} />
+
+<Heading>StatsSummary</Heading>
+
+Visao estatistica consolidada por canal com minimo, maximo, media e desvio padrao.
+
+<Canvas of={StatsSummaryStories.Default} />
+<Controls of={StatsSummaryStories.Default} />
+
+<Heading>Paginas Completas</Heading>
+
+Visao de tela completa das paginas principais com dados simulados em modo demo.
+
+<Heading>Dashboard Page</Heading>
+<Canvas of={DashboardPageStories.Default} />
+
+<Heading>Monitoring Page</Heading>
+<Canvas of={MonitoringPageStories.LiveView} />
+
+<Heading>Reports Page</Heading>
+<Canvas of={ReportsPageStories.Default} />
+
+<Heading>App Shell (Navegacao + Pagina)</Heading>
+
+Layout completo com barra de navegacao superior e troca de telas no mesmo canvas,
+simulando o fluxo de roteamento da aplicacao.
+
+<Canvas of={AppShellStories.Interactive} />
